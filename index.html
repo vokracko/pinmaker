@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pinmaker — Create print-ready circular pin layouts from your photos. Upload images, crop visually, and generate A4 PDFs for printing.">
+  <title>Pinmaker — Circular Pin Layout Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <!-- Header -->
+    <header id="appHeader">
+      <h1>Pinmaker</h1>
+      <p class="subtitle">Create print-ready circular pin layouts from your photos</p>
+    </header>
+
+    <!-- Settings Section -->
+    <section id="settingsSection" class="card" aria-label="Pin settings">
+      <div class="settings-layout">
+        <!-- Pin Diagram -->
+        <div class="diagram-container">
+          <svg id="pinDiagram" viewBox="0 0 250 200" width="250" height="200" aria-label="Diagram showing pin diameter vs total diameter">
+            <!-- Total diameter circle (outer) -->
+            <circle cx="100" cy="100" r="55" fill="none" stroke="hsl(220,30%,40%)" stroke-width="1.5" stroke-dasharray="6 3"/>
+            <!-- Bleed ring fill -->
+            <circle cx="100" cy="100" r="55" fill="hsla(220,30%,40%,0.1)"/>
+            <!-- Pin diameter circle (inner) -->
+            <circle cx="100" cy="100" r="45" fill="hsla(220,70%,55%,0.08)" stroke="hsl(220,70%,55%)" stroke-width="2"/>
+            
+            <!-- Labels positioned completely outside circles -->
+            <text x="100" y="20" text-anchor="middle" fill="hsl(220,20%,55%)" font-size="10" font-family="Inter, sans-serif">Total diameter (pin diameter + bleed ring)</text>
+            <text x="100" y="32" text-anchor="middle" fill="hsl(220,20%,55%)" font-size="8" font-family="Inter, sans-serif" opacity="0.8">(invisible, can extend beyond image)</text>
+            
+            <text x="100" y="185" text-anchor="middle" fill="hsl(220,70%,65%)" font-size="11" font-family="Inter, sans-serif" font-weight="500">Pin diameter (visible area)</text>
+          </svg>
+        </div>
+
+        <!-- Inputs -->
+        <div class="settings-inputs">
+          <div class="inputs-row">
+            <div class="input-group">
+              <label for="pinDiameterInput">Pin ∅ (cm)</label>
+              <input type="number" id="pinDiameterInput" value="5.8" min="1" max="20" step="0.1"
+                     aria-label="Pin diameter in centimeters">
+            </div>
+            <div class="input-group">
+              <label for="totalDiameterInput">Total ∅ (cm)</label>
+              <input type="number" id="totalDiameterInput" value="7.0" min="1" max="25" step="0.1"
+                     aria-label="Total diameter in centimeters">
+            </div>
+          </div>
+          <span id="dimensionError" class="error-msg" role="alert" hidden>Total must be ≥ pin diameter</span>
+          <button id="selectImagesBtn" type="button" aria-label="Select images to create pins from">
+            <span class="btn-icon">📁</span> Select Images…
+          </button>
+          <input type="file" id="fileInput" multiple accept="image/*" hidden aria-hidden="true">
+          <span class="file-hint">JPEG, PNG, or WebP</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Crop Section -->
+    <section id="cropSection" class="card" aria-label="Image crop editor">
+      <div id="cropEmptyState" class="empty-state">
+        <div class="empty-icon">🖼️</div>
+        <p>Select images above to start</p>
+      </div>
+      <div id="cropEditor" class="crop-editor" hidden>
+        <div id="canvasWrapper" class="canvas-wrapper">
+          <canvas id="cropCanvas" aria-label="Image crop preview — drag to pan, scroll to zoom"
+                  tabindex="0"></canvas>
+        </div>
+        <div class="crop-controls">
+          <div class="zoom-control">
+            <button id="zoomOutBtn" type="button" aria-label="Zoom out" class="zoom-btn">−</button>
+            <input type="range" id="zoomSlider" aria-label="Zoom level" step="0.01">
+            <button id="zoomInBtn" type="button" aria-label="Zoom in" class="zoom-btn">+</button>
+            <span id="zoomLabel" class="zoom-label">100%</span>
+          </div>
+          <button id="resetCropBtn" type="button" aria-label="Reset crop to default" class="secondary-btn">
+            ↺ Reset Crop
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Thumbnail Strip -->
+    <section id="thumbnailSection" class="card" aria-label="Loaded images" hidden>
+      <div id="thumbnailStrip" class="thumbnail-strip" role="listbox" aria-label="Image thumbnails">
+        <!-- Thumbnails inserted dynamically -->
+      </div>
+      <button id="addMoreBtn" type="button" class="add-more-btn" aria-label="Add more images">
+        + Add
+      </button>
+    </section>
+
+    <!-- Generate Button -->
+    <div id="generateSection" class="generate-section" hidden>
+      <button id="generatePdfBtn" type="button" aria-label="Generate PDF with pin layout">
+        🖨️ Create Pin Print (<span id="pinCount">0</span> pins)
+      </button>
+      <!-- Progress -->
+      <div id="progressBar" class="progress-container" hidden>
+        <div class="progress-track">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <span id="progressLabel" class="progress-label">Generating PDF…</span>
+      </div>
+      <!-- Completion -->
+      <div id="completionMsg" class="completion-msg" hidden>
+        <span>✅ PDF ready!</span>
+        <a id="redownloadLink" href="#" download="pinmaker.pdf" aria-label="Download PDF again">Download again</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="app.js"></script>
+  <script src="pdf.js"></script>
+</body>
+</html>
